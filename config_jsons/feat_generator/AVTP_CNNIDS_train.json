@@ -1,5 +1,5 @@
 {
-    "feature_generator": "CNNIDSFeatureGenerator",
+    "feature_generator": "GeneralizedCNNIDSFeatureGenerator",
     "config": {
         "window_size": 44,
         "window_slide": 1,
@@ -7,12 +7,12 @@
         "multiclass": false,
         "labeling_schema": "AVTP_Intrusion_dataset",
         "dataset": "AVTP_Intrusion_dataset",
-        "suffix": "test",
+        "suffix": "train",
         "sum_x": false
     },
     "paths": {
-        "injected_only_frame_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/raw/single-MPEG-frame.pcap",
-        "injected_data_paths" : ["/home/lfml/workspace/datasets/avtp-intrusion-dataset/raw/driving_01_injected.pcap", "/home/lfml/workspace/datasets/avtp-intrusion-dataset/raw/driving_02_injected.pcap"],
+        "injected_only_frame_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/single-MPEG-frame.pcap",
+        "injected_data_paths" : ["/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_01_injected.pcap", "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_02_injected.pcap"],
         "output_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/processed"
     },
     "load_paths": {

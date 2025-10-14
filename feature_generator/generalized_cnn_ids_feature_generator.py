@@ -16,7 +16,7 @@ DEFAULT_WINDOW_SLIDE = 1
 AVTP_PACKETS_LENGHT = 438
 DEFAULT_LABELING_SCHEMA = "AVTP_Intrusion_dataset"
 DEFAULT_DATASET = "AVTP_Intrusion"
-DEFAULT_SUM_X = False
+DEFAULT_SUM_X = True
 
 LABELING_SCHEMA_FACTORY = {
     "AVTP_Intrusion_dataset": labeling_schemas.avtp_intrusion_labeling_schema,
@@ -319,7 +319,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             # Get a sequence of data for x
             seq_X = x_data[start_ix:end_ix]
             if self._sum_x:
-                seq_X = np.sum(seq_X, axis=0)
+                seq_X = np.sum(seq_X.astype(np.uint16), axis=0)
 
             # Get a squence of data for y
             tmp_seq_y = y_data[start_ix : end_ix]
