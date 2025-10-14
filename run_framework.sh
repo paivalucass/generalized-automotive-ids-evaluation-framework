@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Paths
-BASE_PATH="/home/lfml/workspace/automotive-ids-evaluation-framework"
+BASE_PATH="/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework"
 FEAT_GEN_CONFIG_FOLDER="config_jsons/feat_generator"
 MODEL_TRAIN_VALID_CONFIG_FOLDER="config_jsons/model_train_validate"
 MODEL_TEST_CONFIG_FOLDER="config_jsons/model_test"
@@ -9,7 +9,7 @@ DETECTION_TIME_CONFIG_FOLDER="config_jsons/test_detection_time"
 
 # Change this according to the desired configuration
 ## Feat generator configs
-SELECTED_FEAT_GEN_CONFIG="AVTP_CNNIDS_train.json"
+SELECTED_FEAT_GEN_CONFIG="TOW_CNNIDS_Oneclass_train.json"
 # SELECTED_FEAT_GEN_CONFIG="TOW_CNNIDS_Multiclass_train.json"
 # SELECTED_FEAT_GEN_CONFIG="TOW_CNNIDS_Oneclass_train.json"
 
@@ -40,7 +40,7 @@ MODEL_TEST_CONFIG_PATH="${BASE_PATH}/${MODEL_TEST_CONFIG_FOLDER}/${SELECTED_MODE
 DETECTION_TIME_CONFIG_PATH="${BASE_PATH}/${DETECTION_TIME_CONFIG_FOLDER}/${SELECTED_DETECTION_TIME_IDS_CONFIG}"
 
 # Run the feature generator step
-venv/bin/python3 execute_feature_generator.py --feat_gen_config ${FEAT_GEN_CONFIG_PATH} --bench_time
+venv/bin/python3 execute_feature_generator.py --feat_gen_config ${FEAT_GEN_CONFIG_PATH} 
 
 # Run the model training and validation step
 # venv/bin/python3 execute_model_train_validation.py --model_train_valid_config ${MODEL_TRAIN_VALID_CONFIG_PATH}
