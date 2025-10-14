@@ -13,7 +13,7 @@
     "paths": {
         "injected_only_frame_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/single-MPEG-frame.pcap",
         "injected_data_paths" : ["/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_01_injected.pcap", "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_02_injected.pcap"],
-        "output_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/processed"
+        "output_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed"
     },
     "load_paths": {
         "X_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/processed/X_train_AVTP_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False.npz",
