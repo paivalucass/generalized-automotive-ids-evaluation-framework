@@ -55,41 +55,57 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
         feature_generator = CNN_IDS_FEAT_GEN_AVAILABLE_DATASETS[self._dataset](paths_dictionary)
 
     def __tow_ids_dataset_generate_features(self, paths_dictionary: typing.Dict):
-        # Load raw packets
-        labels = pd.read_csv(paths_dictionary["y_train_path"], header=None, names=["Class", "Description"])
-        converted_packets_list = []
-        raw_packets = rdpcap(paths_dictionary["training_packets_path"])
+        
+        for split in ["train", "test"]:
+            print(f"\n===== Processing {split.upper()} dataset =====")
 
-        print(">> Loading raw packets...")
-        for raw_packet in raw_packets:
-            converted_packet = np.frombuffer(raw(raw_packet), dtype='uint8')
+            # Load paths dynamically
+            labels_path = paths_dictionary[f"y_{split}_path"]
+            packets_path = paths_dictionary[f"{split}_packets_path"]
+            output_prefix = f"{paths_dictionary['output_path']}/"
 
-            converted_packet_len = len(converted_packet)
-            if converted_packet_len < self._number_of_bytes:
-                bytes_to_pad = self._number_of_bytes - converted_packet_len
-                converted_packet = np.pad(converted_packet, (0, bytes_to_pad), 'constant')
-            else:
-                converted_packet = converted_packet[0:self._number_of_bytes]
+            # Load labels
+            labels = pd.read_csv(labels_path, header=None, names=["Class", "Description"])
 
-            converted_packets_list.append(converted_packet)
+            # Load and convert raw packets
+            print(">> Loading raw packets...")
+            converted_packets_list = []
+            raw_packets = rdpcap(packets_path)
 
-        converted_packets = np.array(converted_packets_list, dtype='uint8')
+            for raw_packet in raw_packets:
+                converted_packet = np.frombuffer(raw(raw_packet), dtype='uint8')
 
-        # Preprocess packets
-        print(">> Preprocessing raw packets...")
-        preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
+                converted_packet_len = len(converted_packet)
+                if converted_packet_len < self._number_of_bytes:
+                    bytes_to_pad = self._number_of_bytes - converted_packet_len
+                    converted_packet = np.pad(converted_packet, (0, bytes_to_pad), 'constant')
+                else:
+                    converted_packet = converted_packet[:self._number_of_bytes]
 
-        print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
-        print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
+                converted_packets_list.append(converted_packet)
 
-        # Aggregate features and labels
-        print(">> Aggregating and labeling...")
-        aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
+            converted_packets = np.array(converted_packets_list, dtype='uint8')
 
-        np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", aggregated_X)
+            # Preprocess packets
+            print(">> Preprocessing raw packets...")
+            preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
 
-        y_df = pd.DataFrame(aggregated_y, columns=["Class"])
-        y_df.to_csv(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}.csv")
+            print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
+            print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
+
+            # Aggregate features and labels
+            print(">> Aggregating and labeling...")
+            aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
+
+            # Save features
+            np.savez(f"{output_prefix}X_{split}_.npz", aggregated_X)
+
+            # Save labels
+            y_df = pd.DataFrame(aggregated_y, columns=["Class"])
+            y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
+
+            print(f">> Saved processed {split} dataset successfully.")
+
 
     def __avtp_dataset_generate_features(self, paths_dictionary: typing.Dict):
         raw_injected_only_packets = self.__read_raw_packets(paths_dictionary['injected_only_frame_path'])

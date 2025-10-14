@@ -2,9 +2,11 @@ import argparse
 import json
 
 from feature_generator import cnn_ids_feature_generator
+from feature_generator import generalized_cnn_ids_feature_generator
 
 AVAILABLE_FEATURE_GENERATORS = {
-    "CNNIDSFeatureGenerator": cnn_ids_feature_generator.CNNIDSFeatureGenerator
+    "CNNIDSFeatureGenerator": cnn_ids_feature_generator.CNNIDSFeatureGenerator,
+    "GeneralizedCNNIDSFeatureGenerator": generalized_cnn_ids_feature_generator.GeneralizedCNNIDSFeatureGenerator
 }
 
 def main():
