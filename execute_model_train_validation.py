@@ -1,6 +1,8 @@
 import argparse
 import json
 
+from feature_generator import generalized_cnn_ids_feature_generator
+
 from feature_generator import cnn_ids_feature_generator
 from models import (
     conv_net_ids,
@@ -14,7 +16,8 @@ from model_train_validation import (
 )
 
 AVAILABLE_FEATURE_GENERATORS = {
-    "CNNIDSFeatureGenerator": cnn_ids_feature_generator.CNNIDSFeatureGenerator
+    "CNNIDSFeatureGenerator": cnn_ids_feature_generator.CNNIDSFeatureGenerator,
+    "GeneralizedCNNIDSFeatureGenerator": generalized_cnn_ids_feature_generator.GeneralizedCNNIDSFeatureGenerator
 }
 
 AVAILABLE_IDS = {
@@ -88,7 +91,6 @@ def main():
     train_validator.execute(data)
 
     print("Model trained successfully!")
-
 
 if __name__ == "__main__":
     main()

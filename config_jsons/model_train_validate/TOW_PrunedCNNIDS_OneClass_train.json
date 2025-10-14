@@ -1,0 +1,34 @@
+{
+    "feat_gen": {
+        "feature_generator": "GeneralizedCNNIDSFeatureGenerator",
+        "config": {
+            "window_size": 44,
+            "window_slide": 1,
+            "number_of_bytes": 58,
+            "multiclass": true,
+            "labeling_schema": "TOW_IDS_dataset_one_class",
+            "dataset": "TOW_IDS_dataset"
+        },
+        "load_paths": {
+            "X_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_filtered/processed/X_train_.npz",
+            "y_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_filtered/processed/y_train.csv"
+        }
+    },
+    "model_specs": {
+        "framework": "pytorch",
+        "model": "PrunedCNNIDS",
+        "model_name": "PrunedCNNIDS",
+        "criterion": "categorical-cross-entropy",
+        "hyperparameters": {
+            "batch_size": 64,
+            "learning_rate": 0.001,
+            "num_epochs": 30,
+            "early_stopping_patience": 5,
+            "num_outputs": 1
+        },
+        "paths": {
+            "metrics_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/metrics",
+            "models_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_trained_models"
+        }
+    }
+}
