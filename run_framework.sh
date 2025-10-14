@@ -41,10 +41,10 @@ MODEL_TEST_CONFIG_PATH="${BASE_PATH}/${MODEL_TEST_CONFIG_FOLDER}/${SELECTED_MODE
 DETECTION_TIME_CONFIG_PATH="${BASE_PATH}/${DETECTION_TIME_CONFIG_FOLDER}/${SELECTED_DETECTION_TIME_IDS_CONFIG}"
 
 # Run the feature generator step
-venv/bin/python3 execute_feature_generator.py --feat_gen_config ${FEAT_GEN_CONFIG_PATH} 
+# venv/bin/python3 execute_feature_generator.py --feat_gen_config ${FEAT_GEN_CONFIG_PATH} 
 
 # Run the model training and validation step
-# venv/bin/python3 execute_model_train_validation.py --model_train_valid_config ${MODEL_TRAIN_VALID_CONFIG_PATH}
+venv/bin/python3 execute_model_train_validation.py --model_train_valid_config ${MODEL_TRAIN_VALID_CONFIG_PATH}
 
 # Run the model test step
 # venv/bin/python3 execute_model_test.py --model_test_config ${MODEL_TEST_CONFIG_PATH}
