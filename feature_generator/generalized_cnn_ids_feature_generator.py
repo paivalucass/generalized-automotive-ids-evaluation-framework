@@ -16,7 +16,7 @@ DEFAULT_WINDOW_SLIDE = 1
 AVTP_PACKETS_LENGHT = 438
 DEFAULT_LABELING_SCHEMA = "AVTP_Intrusion_dataset"
 DEFAULT_DATASET = "AVTP_Intrusion"
-DEFAULT_SUM_X = True
+DEFAULT_SUM_X = False
 
 LABELING_SCHEMA_FACTORY = {
     "AVTP_Intrusion_dataset": labeling_schemas.avtp_intrusion_labeling_schema,
@@ -112,7 +112,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
         injected_only_packets_array = self.__convert_raw_packets(raw_injected_only_packets)
 
         if self._sum_x:
-            X = np.empty(shape=(0, self._number_of_columns), dtype='uint16')
+            X = np.empty(shape=(0, self._number_of_columns), dtype='uint8')
         else:
             X = np.empty(shape=(0, self._window_size, self._number_of_columns), dtype='uint8')
         y = np.array([], dtype='uint8')
@@ -135,7 +135,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             aggregated_y = np.array(aggregated_y, dtype='uint8')
 
             # Concatenate both indoors injected packets
-            X = np.concatenate((X, aggregated_X), axis=0, dtype='uint16')
+            X = np.concatenate((X, aggregated_X), axis=0, dtype='uint8')
             y = np.concatenate((y, aggregated_y), axis=0, dtype='uint8')
 
             np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)

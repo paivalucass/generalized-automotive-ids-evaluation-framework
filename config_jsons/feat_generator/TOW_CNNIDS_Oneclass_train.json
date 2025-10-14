@@ -8,7 +8,7 @@
         "labeling_schema": "TOW_IDS_dataset_one_class",
         "dataset": "TOW_IDS_dataset",
         "suffix": "train",
-        "sum_x": true
+        "sum_x": false
     },
     "paths": {
         "test_packets_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_filtered/Automotive_Ethernet_with_Attack_original_10_17_20_04_test_filtered.pcap",

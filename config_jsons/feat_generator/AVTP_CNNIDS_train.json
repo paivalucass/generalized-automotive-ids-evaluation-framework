@@ -8,7 +8,7 @@
         "labeling_schema": "AVTP_Intrusion_dataset",
         "dataset": "AVTP_Intrusion_dataset",
         "suffix": "train",
-        "sum_x": true
+        "sum_x": false
     },
     "paths": {
         "injected_only_frame_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/single-MPEG-frame.pcap",
