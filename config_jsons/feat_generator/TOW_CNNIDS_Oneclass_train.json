@@ -11,10 +11,10 @@
         "sum_x": true
     },
     "paths": {
-        "test_packets_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/Automotive_Ethernet_with_Attack_original_10_17_19_50_training.pcap",
-        "training_packets_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/Automotive_Ethernet_with_Attack_original_10_17_20_04_test.pcap",
-        "y_test_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/y_test.csv",
-        "y_train_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/y_train.csv",
+        "test_packets_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/Automotive_Ethernet_with_Attack_original_10_17_19_50_training_filtered.pcap",
+        "training_packets_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/Automotive_Ethernet_with_Attack_original_10_17_20_04_test_filtered.pcap",
+        "y_test_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/y_test_filtered.csv",
+        "y_train_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW/y_train_filtered.csv",
         "output_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_filtered/processed"
     },
     "load_paths": {
