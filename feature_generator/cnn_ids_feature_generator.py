@@ -82,6 +82,10 @@ class CNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatureGenerator
 
         print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
         print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
+        print(f"preprocessed_packets[1] = {preprocessed_packets[1]}")
+        print(f"preprocessed_packets[2] = {preprocessed_packets[2]}")
+        print(f"preprocessed_packets[3] = {preprocessed_packets[3]}")
+        print(f"preprocessed_packets[4] = {preprocessed_packets[4]}")
 
         # Aggregate features and labels
         print(">> Aggregating and labeling...")
