@@ -151,7 +151,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
         if (self._dataset == "TOW_IDS_dataset"):
             y = pd.read_csv(paths_dictionary['y_path'])
-            y = y.drop(columns=["Unnamed: 0"])
+            # y = y.drop(columns=["Unnamed: 0"])
             if self._dataset == "TOW_IDS_multiclass":
                 y["Class"] = y["Class"].map(
                     {

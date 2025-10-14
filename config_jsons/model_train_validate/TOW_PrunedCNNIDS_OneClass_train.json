@@ -5,7 +5,7 @@
             "window_size": 44,
             "window_slide": 1,
             "number_of_bytes": 58,
-            "multiclass": true,
+            "multiclass": false,
             "labeling_schema": "TOW_IDS_dataset_one_class",
             "dataset": "TOW_IDS_dataset"
         },
