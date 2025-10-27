@@ -1,0 +1,44 @@
+{
+    "feat_gen": {
+        "feature_generator": "GeneralizedCNNIDSFeatureGenerator",
+        "config": {
+            "window_size": 44,
+            "window_slide": 1,
+            "number_of_bytes": 58,
+            "multiclass": false,
+            "labeling_schema": "AVTP_Intrusion_dataset",
+            "dataset": "AVTP_Intrusion_dataset",
+            "sum_x": true
+        },
+        "load_paths": {
+            "X_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP_masked/processed_random_forest/X_train_AVTP_Indoor_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_True.npz",
+            "y_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP_masked/processed_random_forest/y_train_AVTP_Indoor_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_True.npz"
+        }
+    },
+    "model_specs": {
+        "framework": "sklearn",
+        "model": "SklearnClassifier",
+        "model_name": "RandomForestClassifier",
+        "model_params": {
+            "n_estimators": 200,
+            "max_depth": 10,
+            "max_features": 7,
+            "bootstrap": true,
+            "random_state": 42
+        },
+        "hyperparams_grid": {
+            "clf__n_estimators": [50, 100, 200],
+            "clf__max_depth": [4, 6, 10],
+            "clf__max_features": [3, 5, 7],
+            "clf__bootstrap": [true],
+            "clf__random_state": [42]
+        },
+        "paths": {
+            "metrics_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_tested_models",
+            "models_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_tested_models"
+        },
+        "presaved_paths": {
+            "entire": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_trained_models/TOW_Filtered_Masked_RandomForest_2025_10_22_15_56_55_sklearn_train_val/models/RandomForestClassifier_entire_dataset_.pkl"
+        }
+    }
+}

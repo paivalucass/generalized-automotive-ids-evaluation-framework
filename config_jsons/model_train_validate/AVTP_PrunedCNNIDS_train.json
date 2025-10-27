@@ -10,8 +10,8 @@
             "dataset": "AVTP_Intrusion_dataset"
         },
         "load_paths": {
-            "X_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/processed/X_train_AVTP_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False.npz",
-            "y_path": "/home/lfml/workspace/datasets/avtp-intrusion-dataset/processed/y_train_AVTP_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False.npz"
+            "X_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed/X_train_AVTP_Indoor_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz",
+            "y_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed/y_train_AVTP_Indoor_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz"
         }
     },
     "model_specs": {
@@ -27,8 +27,8 @@
             "num_outputs": 1
         },
         "paths": {
-            "metrics_output_path":"/home/lfml/workspace/metrics",
-            "models_output_path":"/home/lfml/workspace/models"
+            "metrics_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_trained_models",
+            "models_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_trained_models"
         }
     }
 }

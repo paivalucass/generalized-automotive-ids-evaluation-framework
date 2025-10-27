@@ -4,3 +4,5 @@ venv/
 *.pcap
 *.log
 *.csv
+*.npz
+*.out

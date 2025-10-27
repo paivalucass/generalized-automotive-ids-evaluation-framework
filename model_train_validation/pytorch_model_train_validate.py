@@ -123,6 +123,17 @@ class PytorchModelTrainValidation(abstract_model_train_validate.AbstractModelTra
     def __reset_early_stopping(self):
         self._best_val_loss = float("inf")
         self._epochs_without_improvement = 0
+        
+    def __get_sample_input(self, dataloader, device):
+        try:
+            sample_batch = next(iter(dataloader))
+            sample_input = sample_batch[0]
+            sample_input = sample_input.float().to(device)
+        except StopIteration:
+            sample_input = torch.randn(1, 1, 32, 32, dtype=torch.float).to(device)
+
+        return sample_input
+
 
     def __train_model(self, criterion, device, trainloader, fold, epoch) -> int:
         self._model.train()
@@ -242,18 +253,6 @@ class PytorchModelTrainValidation(abstract_model_train_validate.AbstractModelTra
                     target = target.reshape(-1, 1)
                 target = target.float()
 
-                # if (self._model_name == "MultiStageIDS"):
-                #     # Run stages
-                #     y1 = self._model.forward_first_stage(data)
-                #     y2 = self._model.forward_second_stage(data)
-
-                #     # Move to devices
-                #     y1 = y1.to(device)
-                #     y2 = y2.to(device)
-
-                #     # Combine data
-                #     data = torch.cat((y1, y2), axis=1)
-
                 output = self._model(data)
 
                 accuracy_metric.update(output.detach(), target)
@@ -273,8 +272,7 @@ class PytorchModelTrainValidation(abstract_model_train_validate.AbstractModelTra
             prec = precision_score.compute().cpu().numpy()
             recall = recall_score.compute().cpu().numpy()
 
-            # TODO: Get the data format using the data
-            dummy_input = torch.randn(1, 1, 44, 116, dtype=torch.float).to(device)
+            dummy_input = self.__get_sample_input(testloader, device)
             if device.type == "cpu":
                 timing_func = timing.pytorch_inference_time_cpu
             else:

@@ -1,0 +1,38 @@
+{
+    "feat_gen": {
+        "feature_generator": "GeneralizedCNNIDSFeatureGenerator",
+        "config": {
+            "window_size": 44,
+            "window_slide": 1,
+            "number_of_bytes": 58,
+            "multiclass": false,
+            "labeling_schema": "AVTP_Intrusion_dataset",
+            "dataset": "AVTP_Intrusion_dataset"
+        },
+        "load_paths": {
+            "X_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed/X_train_AVTP_Driving_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz",
+            "y_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed/y_train_AVTP_Driving_Intrusion_dataset_Wsize_44_Cols_116_Wslide_1_MC_False_sumX_False.npz"
+        }
+    },
+    "model_specs": {
+        "framework": "pytorch",
+        "model": "PrunedCNNIDS",
+        "model_name": "PrunedCNNIDS",
+        "criterion": "binary-cross-entropy",
+        "hyperparameters": {
+            "batch_size": 64,
+            "learning_rate": 0.001,
+            "num_epochs": 1,
+            "early_stopping_patience": 5,
+            "num_outputs": 1
+        },
+        "paths": {
+            "metrics_output_path":"/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_tested_models",
+            "models_output_path":"/home/lfml/workspace/models",
+            "forward_output_path":"/home/lfml/workspace/forward"
+        },
+        "presaved_paths": {
+            "entire": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/generalized_trained_models/TOW_Filtered_Prunned_2025_10_16_00_52_16_pytorch_train/models/pytorch_model_PrunedCNNIDS_4"
+        }
+    }
+}

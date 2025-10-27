@@ -1,5 +1,6 @@
 import argparse
 import json
+import torch
 
 from feature_generator import generalized_cnn_ids_feature_generator
 
@@ -74,13 +75,17 @@ def main():
     # TODO: Transformar isso numa função externa ao main
     print("> Creating model...")
     if framework == "pytorch":
+        # Take a single sample from the dataset
+        sample_X, _ = data[0]  # first element (X[0], y[0])
+        # Convert to torch tensor
+        sample_tensor = torch.tensor(sample_X, dtype=torch.float32).unsqueeze(0)
         num_outputs = model_specs_dict.get('hyperparameters').get('num_outputs', 1)
         num_ensemble_inputs = model_specs_dict.get('hyperparameters').get('ensemble_inputs', 2)
         if model_name in ["CNNIDS", "PrunedCNNIDS", "MultiClassCNNIDS"]:
             if num_outputs > 1:
-                model = AVAILABLE_IDS[model_name](number_of_outputs=num_outputs)
+                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_outputs=num_outputs)
             else:
-                model = AVAILABLE_IDS[model_name]()
+                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor)
         print(f">> {model_name} was created with {num_outputs} outputs")
     elif framework == "sklearn":
         model = AVAILABLE_IDS[model_name](model_specs_dict)

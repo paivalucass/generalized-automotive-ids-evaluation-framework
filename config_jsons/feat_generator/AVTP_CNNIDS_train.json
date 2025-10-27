@@ -12,7 +12,7 @@
     },
     "paths": {
         "injected_only_frame_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/single-MPEG-frame.pcap",
-        "injected_data_paths" : ["/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_01_injected.pcap", "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/driving_02_injected.pcap"],
+        "injected_data_paths" : ["/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/indoors_01_injected.pcap", "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/indoors_02_injected.pcap"],
         "output_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/AVTP/processed"
     },
     "load_paths": {
