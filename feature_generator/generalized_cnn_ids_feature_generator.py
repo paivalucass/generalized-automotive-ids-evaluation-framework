@@ -35,6 +35,8 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
         self._data_suffix = config.get('suffix')
 
         self._multiclass = config.get('multiclass', False)
+        
+        self._separate_by_protocol = config.get('separate_by_protocol', False)
 
         self._dataset = config.get('dataset', DEFAULT_DATASET)
 
@@ -88,23 +90,50 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
             # Preprocess packets
             print(">> Preprocessing raw packets...")
-            preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
+            if self._separate_by_protocol:
+                avtp_preprocessed_packets, avtp_labels, gptp_preprocessed_packets, gptp_labels = self.__preprocess_raw_packets_per_protocol_and_field(converted_packets, labels, split_into_nibbles=True)
+                print(f"avtp_len_preprocessed_packets = {len(avtp_preprocessed_packets)}")
+                print(f"preprocessed_packets[0] = {avtp_preprocessed_packets[0]}")
+                print(f"gptp_len_preprocessed_packets = {len(gptp_preprocessed_packets)}")
+                print(f"preprocessed_packets[0] = {gptp_preprocessed_packets[0]}")
+                
+                # Aggregate features and labels
+                print(">> Aggregating and labeling...")
+                aggregated_avtp_X, aggregated_avtp_y = self.__aggregate_based_on_window_size(avtp_preprocessed_packets, avtp_labels)
+                aggregated_gptp_X, aggregated_gptp_y = self.__aggregate_based_on_window_size(gptp_preprocessed_packets, gptp_labels)
 
-            print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
-            print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
+                # Save features
+                np.savez(f"{output_prefix}X_{split}_AVTP_.npz", aggregated_avtp_X)
 
-            # Aggregate features and labels
-            print(">> Aggregating and labeling...")
-            aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
+                # Save labels
+                y_df = pd.DataFrame(aggregated_avtp_y, columns=["Class"])
+                y_df.to_csv(f"{output_prefix}y_{split}_AVTP.csv", index=False)
+                
+                np.savez(f"{output_prefix}X_{split}_GPTP_.npz", aggregated_gptp_X)
 
-            # Save features
-            np.savez(f"{output_prefix}X_{split}_.npz", aggregated_X)
+                # Save labels
+                y_df = pd.DataFrame(aggregated_gptp_y, columns=["Class"])
+                y_df.to_csv(f"{output_prefix}y_{split}_GPTP.csv", index=False)
 
-            # Save labels
-            y_df = pd.DataFrame(aggregated_y, columns=["Class"])
-            y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
+                print(f">> Saved processed {split} dataset successfully.") 
+                
+            else:
+                preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
+                print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
+                print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
 
-            print(f">> Saved processed {split} dataset successfully.")
+                # Aggregate features and labels
+                print(">> Aggregating and labeling...")
+                aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
+
+                # Save features
+                np.savez(f"{output_prefix}X_{split}_.npz", aggregated_X)
+
+                # Save labels
+                y_df = pd.DataFrame(aggregated_y, columns=["Class"])
+                y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
+
+                print(f">> Saved processed {split} dataset successfully.")
 
 
     def __avtp_dataset_generate_features(self, paths_dictionary: typing.Dict):
@@ -285,7 +314,118 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             nibbles[:, int(not i)::2] = (x1_np >> (i * 4)) & mask
 
         return nibbles
+    
+    
+    def __preprocess_raw_packets_per_protocol_and_field(self, converted_packets, labels, split_into_nibbles=True):
+        """
+        Enhanced preprocessing with EtherType-based protocol separation
+        and field-channel decomposition.
+        """
 
+        def get_ethertype(pkt):
+            return int.from_bytes(pkt[12:14], byteorder='big')
+
+        # channel definitions (byte ranges)
+        AVTP_FIELD_CHANNELS = {
+            "EthIIType": (12, 14),
+            "VLANType": (16, 18),
+            "AVTPSubtype": (18, 20),
+            "IECProtocolSequenceNumber": (20,21),
+            "IECProtocolCIPDataBlockContinuity": (45,46),
+            "IECHeader":(54,58)
+        }
+        
+        gPTP_FIELD_CHANNELS = {
+            "EthIIType": (12, 14),
+            "PTPmajormsgTypeminorversion": (14, 16),
+            "PTPmessageLenght": (16, 18),
+            "PTPsequenceID": (44, 46),
+            "PTPControlField": (46,47),
+            "PTPMessageSpecific":(48,58)
+        }
+        
+        AVTP_ETHERTYPE = 0x8100
+        PTP_ETHERTYPE = 0x88F7
+        IPV4_ETHERTYPE = 0x0800
+
+        # group packets by protocol
+        avtp_packets, avtp_labels = [], []
+        gptp_packets, gptp_labels = [], []
+
+        for pkt, lbl in zip(converted_packets, labels.values):
+            ethertype = get_ethertype(pkt)
+            if ethertype == AVTP_ETHERTYPE:
+                avtp_packets.append(pkt)
+                avtp_labels.append(lbl)
+            elif ethertype == PTP_ETHERTYPE:
+                gptp_packets.append(pkt)
+                gptp_labels.append(lbl)
+            # Optional: ignore other EtherTypes (like IPv4)
+
+        avtp_packets = np.array(avtp_packets, dtype=np.uint8)
+        gptp_packets = np.array(gptp_packets, dtype=np.uint8)
+        avtp_labels = np.array(avtp_labels)
+        gptp_labels = np.array(gptp_labels)
+
+        # Optional: define maximum field sizes (so you can standardize dimensions)
+        MAX_FIELD_SIZES = {
+            "AVTP": 10,   # maximum bytes per field (pad/crop to this)
+            "GPTP": 10
+        }
+
+        def process_protocol(packets, protocol_name):
+            """
+            packets: np.ndarray of shape (n_packets, n_bytes)
+            protocol_name: "AVTP" or "GPTP"
+            """
+            # Select the correct channel configuration
+            if protocol_name == "AVTP":
+                FIELD_CHANNELS = AVTP_FIELD_CHANNELS
+            elif protocol_name == "gPTP":
+                FIELD_CHANNELS = gPTP_FIELD_CHANNELS
+            else:
+                raise ValueError(f"Unknown protocol: {protocol_name}")
+
+            max_field_size = MAX_FIELD_SIZES.get(protocol_name, None)
+
+            # Step 1. select first 58 bytes
+            selected = self.__select_packets_bytes(packets)
+
+            # Step 2. compute difference module
+            diff_mod = self.__calculate_difference_module(selected)
+
+            # Step 3. field → channel extraction
+            processed_packets = []
+            for pkt in diff_mod:
+                pkt_channels = []
+                for field_name, (start, end) in FIELD_CHANNELS.items():
+                    segment = pkt[start:end]
+
+                    # Normalize field size (pad/crop)
+                    if max_field_size is not None:
+                        if len(segment) < max_field_size:
+                            segment = np.pad(segment, (0, max_field_size - len(segment)), constant_values=0)
+                        elif len(segment) > max_field_size:
+                            segment = segment[:max_field_size]
+
+                    pkt_channels.append(segment)
+
+                # Stack fields as channels (C × L)
+                pkt_channels = np.stack(pkt_channels, axis=0)
+                processed_packets.append(pkt_channels)
+
+            processed_packets = np.stack(processed_packets, axis=0)
+
+            # Step 4. split into nibbles (optional)
+            if split_into_nibbles:
+                processed_packets = self.__split_into_nibbles(processed_packets)
+
+            return processed_packets
+
+        avtp_processed = process_protocol(avtp_packets, "AVTP")
+        gptp_processed = process_protocol(gptp_packets, "gPTP")
+
+        return avtp_processed, avtp_labels, gptp_processed, gptp_labels
 
     def __preprocess_raw_packets(self, converted_packets, split_into_nibbles=True):
         # Select first 58 bytes

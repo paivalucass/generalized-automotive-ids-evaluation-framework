@@ -1,0 +1,131 @@
+PROTOCOL_FIELDS_DELIMITER_DICT = {
+    "AVTP": {
+		"EthIIType": {
+			"apply_mask": True,
+            "byte_start": 12,
+            "byte_end": 13,
+        },
+		"VLANType": { # FIXME: Os bytes 14 e 15 sao relacionados a prioridade
+            "apply_mask": True,
+            "byte_start": 16,
+            "byte_end": 17,
+        },
+		"AVTPSubtype": {
+			"apply_mask": True,
+            "byte_start": 18,
+            "byte_end": 19,
+        },
+		"IECProtocolSequenceNumber": {
+			"apply_mask": True,
+			"byte_start": 20,
+			"byte_end": 20,
+        },
+#		"IECProtocolStreamID": { Sao iguais em todo o dataset
+#			"apply_mask": True,
+#			"byte_start": 22,
+#			"byte_end": 29,
+#        },
+		"IECProtocolCIPDataBlockContinuity": {
+			"apply_mask": True,
+			"byte_start": 45,
+			"byte_end": 45
+        },
+		"IECHeader": {
+			"apply_mask": True,
+			"byte_start": 54,
+			"byte_end": 57, # Na verdade aqui o que mais muda é o 57, que é o Continuity Counter
+        }
+    },
+    "UDP": {
+		"EthIIType": {
+			"apply_mask": True,
+            "byte_start": 12,
+            "byte_end": 13,
+        },
+		"IPV4Protocol": {
+			"apply_mask": True,
+            "byte_start": 23,
+            "byte_end": 23, #TODO: Checar pra ver como é o acesso
+        },
+		"UDPSourcePort": { #TODO: Conferir qual é a porta que é usada realmente pro CAN ID
+			"apply_mask": True,
+			"byte_start": 34,
+			"byte_end": 35,
+        },
+		"UDPDestinationPort": { #TODO: Conferir qual é a porta que é usada realmente pro CAN ID
+			"apply_mask": True,
+			"byte_start": 36,
+			"byte_end": 37,
+        },
+		"UDPLength": { #TODO: Conferir se a Len é utilizada pra encapsular algo do CAN (Encontrei Len=6 e Len=9)
+            "apply_mask": True,
+			"byte_start": 38,
+            "byte_end": 39,
+        },
+		"UDPPayload": { # TODO: Ia ser importante conferir se todos tem essa mesma Len
+			"apply_mask": True,
+			"byte_start": 42,
+			"byte_end": 50
+        }
+    },
+    "PTP": {
+		"EthIIType": {
+			"apply_mask": True,
+            "byte_start": 12,
+            "byte_end": 13,
+        },
+		"PTPmajormsgTypeminorversion": {
+			"apply_mask": True,
+            "byte_start": 14,
+            "byte_end": 15,
+        },
+		"PTPmessageLenght": {
+			"apply_mask": True,
+			"byte_start": 16,
+			"byte_end": 17
+        },
+		"PTPsequenceID": { # Ele é nessa mesma posição pra todo tipo de mensagem?
+			"apply_mask": True,
+			"byte_start": 44,
+			"byte_end": 45
+        },
+		"PTPControlField": {
+			"apply_mask": True,
+			"byte_start": 46,
+			"byte_end": 46
+        },
+		"PTPMessageSpecific": {
+			"apply_mask": True,
+			"byte_start": 48,
+			"byte_end": 57
+        }
+
+    },
+    "IPV4": {
+        "EthIIDestinationAddress": {
+			"apply_mask": True,
+            "byte_start": 0,
+            "byte_end": 5
+        },
+        "EthIISourceAddress": {
+			"apply_mask": True,
+            "byte_start": 6,
+            "byte_end": 11,
+        },
+        "EthIIType": {
+			"apply_mask": True,
+            "byte_start": 12,
+            "byte_end": 13,
+        },
+		"IPV4SourceAddress": {
+			"apply_mask": True,
+			"byte_start": 26,
+			"byte_end": 29,
+        },
+		"IPV4DestinationAddress": {
+			"apply_mask": True,
+			"byte_start": 30,
+			"byte_end": 33,
+        },
+    }
+}
