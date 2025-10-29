@@ -2,12 +2,12 @@ import torch
 from torch import nn
 
 class PrunedConvNetIDS(nn.Module):
-    def __init__(self, sample_input: torch.Tensor, number_of_outputs=1):
+    def __init__(self, sample_input: torch.Tensor, number_of_outputs=1, number_of_channels = 1):
         super(PrunedConvNetIDS, self).__init__()
 
         # Define the convolutional feature extractor
         self.feature_extraction_layer = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=27, kernel_size=5, stride=1, padding='same'),
+            nn.Conv2d(in_channels=number_of_channels, out_channels=27, kernel_size=5, stride=1, padding='same'),
             nn.ReLU(),
             nn.BatchNorm2d(27, eps=0.001, momentum=0.9),
             nn.MaxPool2d(kernel_size=2, stride=2),

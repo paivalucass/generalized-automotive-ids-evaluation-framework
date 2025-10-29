@@ -14,9 +14,9 @@ DETECTION_TIME_CONFIG_FOLDER="config_jsons/test_detection_time"
 SELECTED_FEAT_GEN_CONFIG="TOW_CNNIDS_Oneclass_train.json"
 
 ## Model train validate configs
-SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="AVTP_RandomForest_train.json"
+SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="TOW_filtered_binned_PrunedCNNIDS_OneClass_train.json"
 # SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="AVTP_PrunedCNNIDS_train.json"
-# SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="TOW_PrunedCNNIDS_Multiclass_train.json"
+# SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="TOW_filtered_CNNIDS_Oneclass_train.json"
 # SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="AVTP_RandomForest_train.json"
 # SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="TOW_RandomForest_train.json"
 # SELECTED_MODEL_TRAIN_VALIDATE_CONFIG="TOW_filtered_masked_PrunedCNNIDS_OneClass_train.json"

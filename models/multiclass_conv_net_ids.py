@@ -2,12 +2,12 @@ import torch
 from torch import nn
 
 class MultiClassConvNetIDS(nn.Module):
-    def __init__(self, sample_input: torch.Tensor, number_of_outputs: int = 2):
+    def __init__(self, sample_input: torch.Tensor, number_of_outputs: int = 2, number_of_channels = 1):
         super(MultiClassConvNetIDS, self).__init__()
 
         # --- Convolutional feature extractor ---
         self.feature_extraction_layer = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=1, padding='same'),
+            nn.Conv2d(in_channels=number_of_channels, out_channels=32, kernel_size=5, stride=1, padding='same'),
             nn.ReLU(),
             nn.BatchNorm2d(32, eps=0.001, momentum=0.9),
             nn.MaxPool2d(kernel_size=2, stride=2),

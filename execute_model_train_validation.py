@@ -80,12 +80,13 @@ def main():
         # Convert to torch tensor
         sample_tensor = torch.tensor(sample_X, dtype=torch.float32).unsqueeze(0)
         num_outputs = model_specs_dict.get('hyperparameters').get('num_outputs', 1)
+        num_channels = model_specs_dict.get('hyperparameters').get('num_channels', 1)
         num_ensemble_inputs = model_specs_dict.get('hyperparameters').get('ensemble_inputs', 2)
         if model_name in ["CNNIDS", "PrunedCNNIDS", "MultiClassCNNIDS"]:
             if num_outputs > 1:
-                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_outputs=num_outputs)
+                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_outputs=num_outputs, number_of_channels=num_channels)
             else:
-                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor)
+                model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_channels=num_channels)
         print(f">> {model_name} was created with {num_outputs} outputs")
     elif framework == "sklearn":
         model = AVAILABLE_IDS[model_name](model_specs_dict)

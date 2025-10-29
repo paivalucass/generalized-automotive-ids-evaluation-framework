@@ -36,6 +36,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
         self._multiclass = config.get('multiclass', False)
         
+        self._use_binary_and_binned = config.get('use_binary_and_binned', False)
         self._separate_by_protocol = config.get('separate_by_protocol', False)
 
         self._dataset = config.get('dataset', DEFAULT_DATASET)
@@ -90,51 +91,27 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
             # Preprocess packets
             print(">> Preprocessing raw packets...")
-            if self._separate_by_protocol:
-                avtp_preprocessed_packets, avtp_labels, gptp_preprocessed_packets, gptp_labels = self.__preprocess_raw_packets_per_protocol_and_field(converted_packets, labels, split_into_nibbles=True)
-                print(f"avtp_len_preprocessed_packets = {len(avtp_preprocessed_packets)}")
-                print(f"preprocessed_packets[0] = {avtp_preprocessed_packets[0]}")
-                print(f"gptp_len_preprocessed_packets = {len(gptp_preprocessed_packets)}")
-                print(f"preprocessed_packets[0] = {gptp_preprocessed_packets[0]}")
-                
-                # Aggregate features and labels
-                print(">> Aggregating and labeling...")
-                aggregated_avtp_X, aggregated_avtp_y = self.__aggregate_based_on_window_size(avtp_preprocessed_packets, avtp_labels)
-                aggregated_gptp_X, aggregated_gptp_y = self.__aggregate_based_on_window_size(gptp_preprocessed_packets, gptp_labels)
+            preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
 
-                # Save features
-                np.savez(f"{output_prefix}X_{split}_AVTP_.npz", aggregated_avtp_X)
+            print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
+            print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
 
-                # Save labels
-                y_df = pd.DataFrame(aggregated_avtp_y, columns=["Class"])
-                y_df.to_csv(f"{output_prefix}y_{split}_AVTP.csv", index=False)
-                
-                np.savez(f"{output_prefix}X_{split}_GPTP_.npz", aggregated_gptp_X)
+            # Aggregate features and labels
+            print(">> Aggregating and labeling...")
+            aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
+            
+            if self._use_binary_and_binned:
+                print(f"aggregated_packets[0]_channel_0 = {aggregated_X[0][0][0]}")
+                print(f"aggregated_packets[0]_channel_1 = {aggregated_X[0][1][0]}")
 
-                # Save labels
-                y_df = pd.DataFrame(aggregated_gptp_y, columns=["Class"])
-                y_df.to_csv(f"{output_prefix}y_{split}_GPTP.csv", index=False)
+            # Save features
+            np.savez(f"{output_prefix}X_{split}_.npz", aggregated_X)
 
-                print(f">> Saved processed {split} dataset successfully.") 
-                
-            else:
-                preprocessed_packets = self.__preprocess_raw_packets(converted_packets, split_into_nibbles=True)
-                print(f"len_preprocessed_packets = {len(preprocessed_packets)}")
-                print(f"preprocessed_packets[0] = {preprocessed_packets[0]}")
+            # Save labels
+            y_df = pd.DataFrame(aggregated_y, columns=["Class"])
+            y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
 
-                # Aggregate features and labels
-                print(">> Aggregating and labeling...")
-                aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
-
-                # Save features
-                np.savez(f"{output_prefix}X_{split}_.npz", aggregated_X)
-
-                # Save labels
-                y_df = pd.DataFrame(aggregated_y, columns=["Class"])
-                y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
-
-                print(f">> Saved processed {split} dataset successfully.")
-
+            print(f">> Saved processed {split} dataset successfully.")
 
     def __avtp_dataset_generate_features(self, paths_dictionary: typing.Dict):
         raw_injected_only_packets = self.__read_raw_packets(paths_dictionary['injected_only_frame_path'])
@@ -171,38 +148,88 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
 
 
+    # def load_features(self, paths_dictionary: typing.Dict):
+    #     X = np.load(paths_dictionary['X_path'])
+    #     X = X.f.arr_0
+    #     if self._sum_x == False:
+    #         X = X.reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
+    #     print(f"shape X = {X.shape}")
+
+    #     if (self._dataset == "TOW_IDS_dataset"):
+    #         y = pd.read_csv(paths_dictionary['y_path'])
+    #         # y = y.drop(columns=["Unnamed: 0"])
+    #         if self._dataset == "TOW_IDS_multiclass":
+    #             y["Class"] = y["Class"].map(
+    #                 {
+    #                     "Normal": 0,
+    #                     "C_D": 1,
+    #                     "C_R": 2,
+    #                     "M_F": 3,
+    #                     "P_I": 4,
+    #                     "F_I": 5
+    #                 }
+    #             )
+    #         y = np.array(y["Class"].values)
+    #     else:
+    #         y = np.load(paths_dictionary['y_path'])
+    #         y = y.f.arr_0
+
+    #     print(f"shape Y = {y.shape}")
+
+    #     if (self._multiclass):
+    #         y = y.reshape(-1, 1)
+    #         ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False).fit(y)
+    #         y = ohe.transform(y)
+
+    #     return [[X[i], y[i]] for i in range(X.shape[0])]
+    
     def load_features(self, paths_dictionary: typing.Dict):
         X = np.load(paths_dictionary['X_path'])
         X = X.f.arr_0
-        if self._sum_x == False:
-            X = X.reshape((X.shape[0], -1, self._window_size, self._number_of_columns))
-        print(f"shape X = {X.shape}")
+        print(f"[LOAD] raw X shape = {X.shape}")
 
+        # --- Handle shape based on stored data ---
+        # Single-channel case (legacy): flatten and reshape to (N, 1, W, L)
+        if X.ndim == 3:
+            # old format: (N, W, L)
+            X = X.reshape((X.shape[0], 1, self._window_size, self._number_of_columns))
+            print("[LOAD] converted legacy dataset to single-channel format:", X.shape)
+
+        # Multi-channel case (new): keep as is
+        elif X.ndim == 4:
+            print("[LOAD] multi-channel dataset detected — keeping shape as-is.")
+
+        else:
+            raise ValueError(f"Unexpected input shape {X.shape} — check dataset format.")
+
+        print(f"Final X shape = {X.shape}")
+
+        # --- Load labels ---
         if (self._dataset == "TOW_IDS_dataset"):
             y = pd.read_csv(paths_dictionary['y_path'])
             # y = y.drop(columns=["Unnamed: 0"])
             if self._dataset == "TOW_IDS_multiclass":
-                y["Class"] = y["Class"].map(
-                    {
-                        "Normal": 0,
-                        "C_D": 1,
-                        "C_R": 2,
-                        "M_F": 3,
-                        "P_I": 4,
-                        "F_I": 5
-                    }
-                )
+                y["Class"] = y["Class"].map({
+                    "Normal": 0,
+                    "C_D": 1,
+                    "C_R": 2,
+                    "M_F": 3,
+                    "P_I": 4,
+                    "F_I": 5
+                })
             y = np.array(y["Class"].values)
         else:
             y = np.load(paths_dictionary['y_path'])
             y = y.f.arr_0
 
-        print(f"shape Y = {y.shape}")
+        print(f"Y shape = {y.shape}")
 
-        if (self._multiclass):
+        # --- One-hot encode for multiclass ---
+        if self._multiclass:
             y = y.reshape(-1, 1)
             ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False).fit(y)
             y = ohe.transform(y)
+            print(f"Y one-hot shape = {y.shape}")
 
         return [[X[i], y[i]] for i in range(X.shape[0])]
 
@@ -267,13 +294,11 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
         return np.array(selected_packets, dtype='uint8')
 
-
     def __calculate_difference_module(self, selected_packets):
         difference_array = np.diff(selected_packets, axis=0)
         difference_module = np.mod(difference_array, 256)
 
         return difference_module
-
 
     def __split_byte_into_nibbles(self, byte):
         high_nibble = (byte >> 4) & 0xf
@@ -299,23 +324,30 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
         return np.array(nibbles_matrix, dtype='uint8')
 
     def __split_into_nibbles(self, x1):
-        # Ensure the dtype is large enough to hold the shifted values without overflow
+        """
+        Splits bytes into nibbles (4-bit values).
+        Works for both 2D (N, L) and 3D (N, C, L) arrays.
+        """
         x1_np = x1.astype(np.uint8)
+        mask = 0xF  # binary: 1111
 
-        # Prepare a mask to isolate nibbles. 0xF is 1111 in binary, which isolates a nibble.
-        mask = 0xF
+        if x1_np.ndim == 2:
+            # (N, L) → (N, 2L)
+            nibbles = np.zeros((x1_np.shape[0], x1_np.shape[1] * 2), dtype=np.uint8)
+            for i in range(0, 2):
+                nibbles[:, int(not i)::2] = (x1_np >> (i * 4)) & mask
+            return nibbles
 
-        # Extract nibbles.
-        # The idea is to shift the original numbers right by 0 and 4 bits
-        # and then mask off the lower 4 bits.
-        nibbles = np.zeros((x1_np.shape[0], x1_np.shape[1] * 2), dtype=np.uint8)
+        elif x1_np.ndim == 3:
+            # (N, C, L) → (N, C, 2L)
+            nibbles = np.zeros((x1_np.shape[0], x1_np.shape[1], x1_np.shape[2] * 2), dtype=np.uint8)
+            for i in range(0, 2):
+                nibbles[:, :, int(not i)::2] = (x1_np >> (i * 4)) & mask
+            return nibbles
 
-        for i in range(0, 2):
-            nibbles[:, int(not i)::2] = (x1_np >> (i * 4)) & mask
+        else:
+            raise ValueError(f"Unexpected input shape {x1_np.shape}, expected 2D or 3D.")
 
-        return nibbles
-    
-    
     def __preprocess_raw_packets_per_protocol_and_field(self, converted_packets, labels, split_into_nibbles=True):
         """
         Enhanced preprocessing with EtherType-based protocol separation
@@ -369,7 +401,7 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
         # Optional: define maximum field sizes (so you can standardize dimensions)
         MAX_FIELD_SIZES = {
-            "AVTP": 10,   # maximum bytes per field (pad/crop to this)
+            "AVTP": 4,   # maximum bytes per field (pad/crop to this)
             "GPTP": 10
         }
 
@@ -441,10 +473,31 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
         return diff_module_packets
 
-
     def __aggregate_based_on_window_size(self, x_data, y_data):
         # Prepare the list for the transformed data
         X, y = list(), list()
+        
+        def binary_change_map(diff_window):
+            # diff_window: (W, L) values 0..255 (or signed if you use signed diffs)
+            # Return: (W, L) of uint8 {0,1}
+            return (np.abs(diff_window) > 0).astype(np.uint8)
+
+        def binned_magnitude_map(diff_window, bins=np.linspace(0, 16, num=5)):
+            # bins list of thresholds; returns integers 0..(len(bins)-2)
+            mag = np.abs(diff_window)
+            # np.digitize returns 1..len(bins); subtract 1 -> 0..K
+            return (np.digitize(mag, bins) - 1).astype(np.uint8)
+
+        def combined_channels_from_window(diff_window, bins=np.linspace(0, 16, num=5)):
+            # returns array shape (C, W, L)
+            c1 = binary_change_map(diff_window)         # channel 0
+            c2 = binned_magnitude_map(diff_window, bins) # channel 1
+            # optionally c3 = sign_map(diff_window)
+            # stack channels
+            stacked = np.stack([c1, c2], axis=0).astype(np.uint8)
+            return stacked
+        
+        nibble_bins = np.linspace(0, 16, num=5)
 
         # Loop of the entire data set
         for i in range(x_data.shape[0]):
@@ -468,7 +521,12 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             seq_y = LABELING_SCHEMA_FACTORY[self._labeling_schema](tmp_seq_y)
 
             # Append the list with sequences
-            X.append(seq_X)
+            if self._use_binary_and_binned:
+                seq_channels = combined_channels_from_window(seq_X, bins = nibble_bins)
+                # seq_channels shape (C=2, W, L)
+                X.append(seq_channels)  # note: append channel-first per-window
+            else:
+                X.append(seq_X)  # legacy path
             y.append(seq_y)
 
         # Make final arrays
