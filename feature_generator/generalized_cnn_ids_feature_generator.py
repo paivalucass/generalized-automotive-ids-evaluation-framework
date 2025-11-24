@@ -33,6 +33,8 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
         self._labeling_schema = config.get('labeling_schema', DEFAULT_LABELING_SCHEMA)
         self._sum_x = config.get('sum_x', DEFAULT_SUM_X)
         self._data_suffix = config.get('suffix')
+        
+        self._normal_only = config.get('normal_only', False)
 
         self._multiclass = config.get('multiclass', False)
         
@@ -112,40 +114,50 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
             y_df.to_csv(f"{output_prefix}y_{split}.csv", index=False)
 
             print(f">> Saved processed {split} dataset successfully.")
-
+            
     def __avtp_dataset_generate_features(self, paths_dictionary: typing.Dict):
         raw_injected_only_packets = self.__read_raw_packets(paths_dictionary['injected_only_frame_path'])
         injected_only_packets_array = self.__convert_raw_packets(raw_injected_only_packets)
 
-        if self._sum_x:
-            X = np.empty(shape=(0, self._number_of_columns), dtype='uint8')
-        else:
-            X = np.empty(shape=(0, self._window_size, self._number_of_columns), dtype='uint8')
-        y = np.array([], dtype='uint8')
+        # Temporary placeholders
+        X, y = None, np.array([], dtype='uint8')
 
         for injected_raw_packets_path in paths_dictionary['injected_data_paths']:
             # Load raw packets
             raw_packets = self.__read_raw_packets(injected_raw_packets_path)
 
-            # Convert loaded packets to np array with uint8_t size
+            # Convert to numpy array
             packets_array = self.__convert_raw_packets(raw_packets)
 
-            # Preprocess packets
+            # Preprocess (split into nibbles, etc.)
             preprocessed_packets = self.__preprocess_raw_packets(packets_array, split_into_nibbles=True)
 
             # Generate labels
             labels = self.__generate_labels(packets_array, injected_only_packets_array)
 
-            # Aggregate features and labels
+            # Aggregate features (sliding window)
             aggregated_X, aggregated_y = self.__aggregate_based_on_window_size(preprocessed_packets, labels)
             aggregated_y = np.array(aggregated_y, dtype='uint8')
 
-            # Concatenate both indoors injected packets
+            # If first iteration, initialize X with the correct shape dynamically
+            if X is None:
+                X = np.empty((0, *aggregated_X.shape[1:]), dtype='uint8')
+                print(f"[INIT] Detected feature shape per sample = {aggregated_X.shape[1:]}")
+
+            if self._use_binary_and_binned:
+                print(f"aggregated_packets[0]_channel_0 = {aggregated_X[0][0][0]}")
+                if aggregated_X.shape[1] > 1:
+                    print(f"aggregated_packets[0]_channel_1 = {aggregated_X[0][1][0]}")
+
+            # Concatenate along the sample axis
             X = np.concatenate((X, aggregated_X), axis=0, dtype='uint8')
             y = np.concatenate((y, aggregated_y), axis=0, dtype='uint8')
 
-            np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)
-            np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
+        # Save final dataset
+        np.savez(f"{paths_dictionary['output_path']}/X_{self._data_suffix}_{self._output_path_suffix}", X)
+        np.savez(f"{paths_dictionary['output_path']}/y_{self._data_suffix}_{self._output_path_suffix}", y)
+
+        print(f"[DONE] Saved dataset: X shape = {X.shape}, y shape = {y.shape}")
 
 
     # def load_features(self, paths_dictionary: typing.Dict):
@@ -277,14 +289,20 @@ class GeneralizedCNNIDSFeatureGenerator(abstract_feature_generator.AbstractFeatu
 
     def __generate_labels(self, packets_list, injected_packets):
         labels_list = []
+        
+        if self._normal_only:
+            for packet in packets_list:
+                current_label = 0
+                labels_list.append(current_label)
+                
+        else:
+            for packet in packets_list:
+                current_label = 0
 
-        for packet in packets_list:
-            current_label = 0
+                if self.__is_array_in_list_of_arrays(packet, injected_packets):
+                    current_label = 1
 
-            if self.__is_array_in_list_of_arrays(packet, injected_packets):
-                current_label = 1
-
-            labels_list.append(current_label)
+                labels_list.append(current_label)
 
         return labels_list
 

@@ -1,0 +1,37 @@
+{
+    "feat_gen": {
+        "feature_generator": "GeneralizedCNNIDSFeatureGenerator",
+        "config": {
+            "window_size": 44,
+            "window_slide": 1,
+            "number_of_bytes": 58,
+            "multiclass": false,
+            "labeling_schema": "TOW_IDS_dataset_one_class",
+            "dataset": "TOW_IDS_dataset"
+        },
+        "load_paths": {
+            "X_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_normal/processed/X_test_.npz",
+            "y_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/dataset/TOW_normal/processed/y_test.csv"
+        }
+    },
+    "model_specs": {
+        "framework": "pytorch_autoencoder",
+        "model": "Autoencoder",
+        "model_name": "Autoencoder",
+        "hyperparameters": {
+            "batch_size": 64,
+            "threshold_method": "percentile",  
+            "percentile": 99.5,
+            "threshold_factor": 3.0,
+            "latent_dim": 16
+        },
+        "paths": {
+            "metrics_output_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/tested_autoencoders",
+            "models_output_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/trained_autoencoders"
+        },
+        "presaved_paths": {
+            "fold_0": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/trained_autoencoders/Latentdim16_2025_11_17_11_51_32_pytorch_ae_train/models/pytorch_ae_Autoencoder_4.pt"
+        },
+        "train_errors_path": "/srv/nfs/shared/lacp/generalized-automotive-ids-evaluation-framework/trained_autoencoders/Latentdim16_2025_11_17_11_51_32_pytorch_ae_train/metrics/reconstruction_errors_fold_4.npy"
+    }
+}

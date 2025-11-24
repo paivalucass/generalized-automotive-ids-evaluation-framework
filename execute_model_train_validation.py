@@ -10,10 +10,12 @@ from models import (
     multiclass_conv_net_ids,
     pruned_conv_net_ids,
     sklearn_classifier,
+    stacked_autoencoder_ids
 )
 from model_train_validation import (
     pytorch_model_train_validate,
-    sklearn_model_train_validate
+    sklearn_model_train_validate,
+    pytorch_autoencoder_train_validate
 )
 
 AVAILABLE_FEATURE_GENERATORS = {
@@ -26,11 +28,13 @@ AVAILABLE_IDS = {
     "MultiClassCNNIDS": multiclass_conv_net_ids.MultiClassConvNetIDS,
     "PrunedCNNIDS": pruned_conv_net_ids.PrunedConvNetIDS,
     "SklearnClassifier": sklearn_classifier.SklearnClassifier,
+    "Autoencoder": stacked_autoencoder_ids.StackedAutoencoderIDS
 }
 
 AVAILABLE_FRAMEWORKS = {
     "pytorch": pytorch_model_train_validate.PytorchModelTrainValidation,
-    "sklearn": sklearn_model_train_validate.SklearnModelTrainValidation
+    "sklearn": sklearn_model_train_validate.SklearnModelTrainValidation,
+    "pytorch_autoencoder": pytorch_autoencoder_train_validate.PytorchAutoencoderTrainValidation
 }
 
 def main():
@@ -74,6 +78,7 @@ def main():
 
     # TODO: Transformar isso numa função externa ao main
     print("> Creating model...")
+    
     if framework == "pytorch":
         # Take a single sample from the dataset
         sample_X, _ = data[0]  # first element (X[0], y[0])
@@ -88,8 +93,14 @@ def main():
             else:
                 model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_channels=num_channels)
         print(f">> {model_name} was created with {num_outputs} outputs")
+        
     elif framework == "sklearn":
         model = AVAILABLE_IDS[model_name](model_specs_dict)
+        
+    elif framework == "pytorch_autoencoder":
+        sample_X, _ = data[0]  # first element (X[0], y[0])
+        input_shape = sample_X.shape
+        model = AVAILABLE_IDS[model_name](input_shape=input_shape,latent_dim=model_specs_dict["hyperparameters"]["latent_dim"])
 
     print("> Initializing model training and evaluation...")
 

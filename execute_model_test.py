@@ -9,10 +9,12 @@ from models import (
     multiclass_conv_net_ids,
     pruned_conv_net_ids,
     sklearn_classifier,
+    stacked_autoencoder_ids
 )
 from model_test import (
     pytorch_model_test,
-    sklearn_model_test
+    sklearn_model_test,
+    autoencoder_model_test
 )
 
 AVAILABLE_FEATURE_GENERATORS = {
@@ -24,12 +26,14 @@ AVAILABLE_IDS = {
     "CNNIDS": conv_net_ids.ConvNetIDS,
     "MultiClassCNNIDS": multiclass_conv_net_ids.MultiClassConvNetIDS,
     "PrunedCNNIDS": pruned_conv_net_ids.PrunedConvNetIDS,
-    "SklearnClassifier": sklearn_classifier.SklearnClassifier
+    "SklearnClassifier": sklearn_classifier.SklearnClassifier,
+    "Autoencoder": stacked_autoencoder_ids.StackedAutoencoderIDS
 }
 
 AVAILABLE_FRAMEWORKS = {
     "pytorch": pytorch_model_test.PytorchModelTest,
-    "sklearn": sklearn_model_test.SklearnModelTest
+    "sklearn": sklearn_model_test.SklearnModelTest,
+    "pytorch_autoencoder": autoencoder_model_test.PytorchAutoencoderTest
 }
 
 def main():
@@ -88,12 +92,18 @@ def main():
             else:
                 model = AVAILABLE_IDS[model_name](sample_input=sample_tensor, number_of_channels=num_channels)
         print(f">> {model_name} was created with {num_outputs} outputs")
+        
     elif framework == "sklearn":
         model = AVAILABLE_IDS[model_name](model_specs_dict)
+        
+    elif framework == "pytorch_autoencoder":
+        sample_X, _ = data[0]  # first element (X[0], y[0])
+        input_shape = sample_X.shape
+        model = AVAILABLE_IDS[model_name](input_shape=input_shape,latent_dim=model_specs_dict["hyperparameters"]["latent_dim"])
 
     print("> Initializing model test...")
     test = AVAILABLE_FRAMEWORKS[framework](model, model_test_config_dict)
-    test.execute(data)
+    test.execute(data, train_errors_path=model_specs_dict["train_errors_path"])
 
     print("Model tested successfully!")
 
