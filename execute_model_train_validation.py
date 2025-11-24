@@ -99,8 +99,8 @@ def main():
         
     elif framework == "pytorch_autoencoder":
         sample_X, _ = data[0]  # first element (X[0], y[0])
-        input_shape = sample_X.shape
-        model = AVAILABLE_IDS[model_name](input_shape=input_shape,latent_dim=model_specs_dict["hyperparameters"]["latent_dim"])
+        # input_shape = sample_X.shape
+        model = AVAILABLE_IDS[model_name](latent_dim=model_specs_dict["hyperparameters"]["latent_dim"])
 
     print("> Initializing model training and evaluation...")
 
